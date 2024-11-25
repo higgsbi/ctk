@@ -61,11 +61,11 @@ elif [[ $1 == "--clean" ]]; then
 elif [[ $1 == "--local" ]]; then
     ./build.sh --clean
     mkdir build
+    mkdir out
     cd build
     cmake .. -DLOCAL_BUILD=ON
     make install
-    mv install/include/ ../out
-    mv install/lib/* ../out
+    mv install/* ../out
     cd ..
 elif [[ $1 == "--system" ]]; then
     ./build.sh --clean
