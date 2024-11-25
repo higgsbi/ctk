@@ -13,7 +13,7 @@ typedef struct {
 } String;
 
 typedef struct {
-    const char* buffer;
+    const c8* buffer;
     size_t length;
 } Str;
 

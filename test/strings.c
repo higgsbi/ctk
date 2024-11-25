@@ -7,6 +7,11 @@ int main() {
     ctk_printf("Original: %S, Splice: %s\n", string, string_splice(string));
     assert(str_equals_str(&str("Hello World!"), string_splice(string)));
 
+    // Format
+    String* formatted = string_from_format(&str("Our number is %d"), 2);
+    ctk_printf("Formatted: '%S'\n", formatted);
+    assert(str_equals_str(&str("Our number is 2"), string_splice(formatted)));
+
     // Push back
     string_push_str(string, &str(" -> Easy as "));
     string_push_char(string, 'A');
@@ -63,6 +68,7 @@ int main() {
     vec_str_free(split_splice);
     vec_string_free(split);
     string_free(spaced_out);
+    string_free(formatted);
     string_free(string);
 
     return 0;

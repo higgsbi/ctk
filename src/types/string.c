@@ -50,12 +50,12 @@ String* string_from_format(const Str* format, ...) {
     va_start(args, format);
 
     String* self = allocate(sizeof(String), 1);
-    self->capacity = format->length * 2;
+    self->capacity = format->length;
     self->length = 0;
     self->buffer = allocate(sizeof(char), self->capacity);
-    char* buffer = self->buffer;
+    const c8* buffer = format->buffer;
 
-    while (*buffer != '\0') {
+    for (usize i = 0; i < format->length; i++) {
         char current = *buffer;
         char next = *(buffer + 1);
         String* string;
