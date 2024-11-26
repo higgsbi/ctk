@@ -14,7 +14,7 @@ typedef struct {
 
 typedef struct {
     const c8* buffer;
-    size_t length;
+    usize length;
 } Str;
 
 OPTION_TYPE(usize, Index, index, 0)

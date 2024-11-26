@@ -55,7 +55,7 @@ String* string_from_format(const Str* format, ...) {
     self->buffer = allocate(sizeof(char), self->capacity);
     const c8* buffer = format->buffer;
 
-    for (usize i = 0; i < format->length; i++) {
+    for (usize i = 0; i < format->length - 1; i++) {
         char current = *buffer;
         char next = *(buffer + 1);
         String* string;
@@ -117,7 +117,7 @@ String* string_from_format(const Str* format, ...) {
                     break;
             }
             buffer += 2;
-        } else {
+        } else if (current != '\0') {
             string_push_char(self, current);
             buffer++;
         }
@@ -403,40 +403,35 @@ OptionIndex str_index_last_char(const Str* self, c8 character) {
 // COMPARISON
 
 bool string_equals_string(const String* self, const String* other) {
-    usize length = self->length < other->length ? self->length : other->length;
-    return memcmp(self->buffer, other->buffer, length) == 0;
+    return self->length == other->length && memcmp(self->buffer, other->buffer, self->length) == 0;
 }
 
 bool string_equals_str(const String* self, const Str* other) {
-    usize length = self->length < other->length ? self->length : other->length;
-    return memcmp(self->buffer, other->buffer, length) == 0;
+    return self->length == other->length && memcmp(self->buffer, other->buffer, self->length) == 0;
 }
 
 bool string_equals_cstr(const String* self, const u8* other) {
     usize length_other = strlen((const char*) other);
-    usize length = self->length < length_other ? self->length : length_other;
-    return memcmp(self->buffer, other, length) == 0;
+    return self->length == length_other && memcmp(self->buffer, other, length_other) == 0;
 }
 
 bool str_equals_str(const Str* self, const Str* other) {
-    usize length = self->length < other->length ? self->length : other->length;
-    return memcmp(self->buffer, other->buffer, length) == 0;
+    return self->length == other->length && memcmp(self->buffer, other->buffer, self->length) == 0;
 }
 
 bool str_equals_cstr(const Str* self, const u8* other) {
     usize length_other = strlen((const char*) other);
-    usize length = self->length < length_other ? self->length : length_other;
-    return memcmp(self->buffer, other, length) == 0;
+    return self->length == length_other && memcmp(self->buffer, other, length_other) == 0;
 }
 
 i32 string_compare(const String** self, const String** other) {
     usize length = (*self)->length < (*other)->length ? (*self)->length : (*other)->length;
-    return memcmp((*self)->buffer, (*other)->buffer, length);
+    return (*self)->length == (*other)->length && memcmp((*self)->buffer, (*other)->buffer, length);
 }
 
 i32 str_compare(const Str** self, const Str** other) {
     usize length = (*self)->length < (*other)->length ? (*self)->length : (*other)->length;
-    return memcmp((*self)->buffer, (*other)->buffer, length);
+    return (*self)->length == (*other)->length && memcmp((*self)->buffer, (*other)->buffer, length);
 }
 
 // PRINTING

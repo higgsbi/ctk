@@ -8,9 +8,9 @@ int main() {
     assert(str_equals_str(&str("Hello World!"), string_splice(string)));
 
     // Format
-    String* formatted = string_from_format(&str("Our number is %d"), 2);
-    ctk_printf("Formatted: '%S'\n", formatted);
-    assert(str_equals_str(&str("Our number is 2"), string_splice(formatted)));
+    String* formatted = string_from_format(&str("Our number is %d %d"), 2, 2);
+    ctk_printf("Original: '%s', Formatted: '%S'\n", &str("Our number is 2 2"), formatted);
+    assert(string_equals_str(formatted, &str("Our number is 2 2")));
 
     // Push back
     string_push_str(string, &str(" -> Easy as "));
