@@ -45,10 +45,7 @@ String* string_with_capacity(usize capacity) {
     return string;
 }
 
-String* string_from_format(const Str* format, ...) {
-    va_list args;
-    va_start(args, format);
-
+String* string_from_args(const Str* format, va_list args) {
     String* self = allocate(sizeof(String), 1);
     self->capacity = format->length;
     self->length = 0;
@@ -123,9 +120,16 @@ String* string_from_format(const Str* format, ...) {
         }
     }
 
+    return self;
+}
+
+String* string_from_format(const Str* format, ...) {
+    va_list args;
+    va_start(args, format);
+    String* string = string_from_args(format, args);
     va_end(args);
 
-    return self;
+    return string;
 }
 
 String* string_from_str(const Str* str) {

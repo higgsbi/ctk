@@ -13,7 +13,7 @@ typedef struct {
 } String;
 
 typedef struct {
-    const c8* buffer;
+    const char* buffer;
     usize length;
 } Str;
 
@@ -27,6 +27,7 @@ Str* string_splice(const String* self);
 String* string_empty();
 String* string_from_str(const Str* str);
 String* string_from_format(const Str* format, ...);
+String* string_from_args(const Str* format, va_list args);
 String* string_with_capacity(usize capacity);
 String* string_clone(const String* self);
 void string_free(String* self);
