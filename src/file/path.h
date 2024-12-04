@@ -19,6 +19,6 @@ void path_normalize(Path* self);
 
 bool path_exists(Path* self);
 bool path_is_directory(Path* self);
-Str path_extension_splice(Path* self);
+Str path_extension_slice(Path* self);
 
 #endif

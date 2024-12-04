@@ -4,12 +4,12 @@
 int main() {
     // Comparison
     String* string = string_from_str(&str("Hello World!"));
-    ctk_printf("Original: %S, Splice: %s\n", string, string_splice(string));
-    assert(str_equals_str(&str("Hello World!"), string_splice(string)));
+    print(&str("Original: %S, Slice: %s\n"), string, string_slice(string));
+    assert(str_equals_str(&str("Hello World!"), string_slice(string)));
 
     // Format
     String* formatted = string_from_format(&str("Our number is %d %d"), 2, 2);
-    ctk_printf("Original: '%s', Formatted: '%S'\n", &str("Our number is 2 2"), formatted);
+    print(&str("Formatted: '%S', Desired: '%s'\n"), formatted, &str("Our number is 2 2"));
     assert(string_equals_str(formatted, &str("Our number is 2 2")));
 
     // Push back
@@ -18,14 +18,14 @@ int main() {
     string_push_char(string, 'B');
     string_push_char(string, 'C');
     string_push_str(string, &str(", simple as doe rae me"));
-    ctk_printf("Appended: %s\n", string_splice(string));
-    assert(string_equals_cstr(string, "Hello World! -> Easy as ABC, simple as doe rae me"));
+    print(&str("Appended: %s\n"), string_slice(string));
+    assert(string_equals_chars(string, "Hello World! -> Easy as ABC, simple as doe rae me"));
 
     // Index
     Str url = str("duckduckgo.com");
     OptionIndex index_dot = str_index_first_char(&url, '.');
-    Str extension = str_subsplice(&url, index_dot.value + 1, url.length - index_dot.value - 1);
-    ctk_printf("Extension of %s is %s\n", &url, &extension);
+    Str extension = str_subslice(&url, index_dot.value + 1, url.length - index_dot.value - 1);
+    print(&str("Extension of %s is %s\n"), &url, &extension);
     assert(str_equals_str(&extension, &str("com")));
 
     // Contains
@@ -39,18 +39,18 @@ int main() {
 
     // Trim
     String* spaced_out = string_from_str(&str("  Spaced Message  "));
-    ctk_printf("Before Trim: '%S'\n", spaced_out);
+    print(&str("Before Trim: '%S'\n"), spaced_out);
     string_trim(spaced_out);
-    ctk_printf("After Trim: '%S'\n", spaced_out);
+    print(&str("After Trim: '%S'\n"), spaced_out);
     assert(string_equals_str(spaced_out, &str("Spaced Message")));
 
     // Split
     Str split_string = str("One/Two/Three");
-    ctk_printf("Split Whole: '%s'\n", &split_string);
+    print(&str("Split Whole: '%s'\n"), &split_string);
 
-    VecStr* split_splice = str_split_splice(&split_string, '/');
-    assert(split_splice->count == 3);
-    FOREACH_VECTOR(Str str, split_splice, { ctk_printf("Split: %s\n", &str); });
+    VecStr* split_slice = str_split_slice(&split_string, '/');
+    assert(split_slice->count == 3);
+    FOREACH_VECTOR(Str str, split_slice, { print(&str("Split: %s\n"), &str); });
 
     Str split_string_b = str("/One//Two//Three/");
     VecString* split = str_split(&split_string_b, '/');
@@ -58,14 +58,14 @@ int main() {
 
     // Replaced
     String* original = string_from_str(&str("NOOneNOTwoNOThreeNOFourNOFiveNO"));
-    ctk_printf("Before replacing: '%S'\n", original);
+    print(&str("Before replacing: '%S'\n"), original);
     string_replace(original, &str("NO"), &str(" "));
-    ctk_printf("After replacing: '%S'\n", original);
+    print(&str("After replacing: '%S'\n"), original);
     assert(string_equals_str(original, &str(" One Two Three Four Five ")));
 
     // Free
     string_free(original);
-    vec_str_free(split_splice);
+    vec_str_free(split_slice);
     vec_string_free(split);
     string_free(spaced_out);
     string_free(formatted);

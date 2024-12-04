@@ -52,7 +52,7 @@ void file_free(File* self) {
     path_free(self->path);
 }
 
-void file_write(File* self, Str* str) {
+void file_write_str(File* self, Str* str) {
     ASSERT_NONNULL(self);
     ASSERT_NONNULL(self->buffer);
     ASSERT_NONNULL(str);
@@ -69,10 +69,10 @@ void file_write_line(File* self, Str* str) {
     fwrite("\n", sizeof(c8), 1, self->buffer);
 }
 
-void file_writef(File* self, const char* format, ...) {
+void file_write(File* self, const Str* format, ...) {
     va_list args;
     va_start(args, format);
-    ctk_fprint_args(self->buffer, format, args);
+    fprint_args(self->buffer, format, args);
     va_end(args);
 }
 

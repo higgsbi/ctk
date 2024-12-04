@@ -67,11 +67,9 @@ Path* path_root() {
 }
 
 Path* path_user() {
-    char* user = getenv("USER");
-    ASSERT_NONNULL(user);
-
+    CStr user = cstr_from_chars(getenv("USER"));
     Path* self = (Path*) string_from_str(&str(HOME_STRING));
-    string_push_cstr(self, user);
+    string_push_cstr(self, &user);
     path_adjust_to_native(self);
 
     return self;
@@ -155,15 +153,15 @@ void path_normalize(Path* self) {
     free(normalized);
 }
 
-Str path_extension_splice(Path* self) {
+Str path_extension_slice(Path* self) {
     ASSERT_NONNULL(self);
-    OptionIndex dot_index = str_index_last_char(string_splice(self), '.');
+    OptionIndex dot_index = str_index_last_char(string_slice(self), '.');
 
     if (option_index_is_empty(dot_index)) {
         return str("");
     }
 
-    return str_subsplice(string_splice(self), dot_index.value + 1, self->length - dot_index.value - 1);
+    return str_subslice(string_slice(self), dot_index.value + 1, self->length - dot_index.value - 1);
 }
 
 void path_to_parent(Path* self) {

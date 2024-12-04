@@ -1,59 +1,37 @@
 #include "io.h"
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "types/string.h"
 #include "types/types.h"
 
-void _ctk_fprintf(FILE* file, const char* format, va_list args);
+void _fprint(FILE* file, const Str* format, va_list args);
 
-void ctk_printf(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    _ctk_fprintf(stdout, format, args);
-    va_end(args);
-}
-
-void ctk_fprintf(FILE* file, const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    _ctk_fprintf(file, format, args);
-    va_end(args);
-}
-
-void ctk_fprint_args(FILE* file, const char* format, va_list args) {
-    _ctk_fprintf(file, format, args);
-}
-
-Process process_start(ProcessMode mode, Str* command) {
-    Process process;
-    process.command = string_from_str(command);
-    string_push_char(process.command, '\0');
-
+Process* process_start(ProcessMode mode, CStr* command) {
     if (mode == PROCESS_READ) {
-        process.os_process = popen(command->buffer, "r");
-    } else {
-        process.os_process = popen(command->buffer, "w");
+        return popen(command->buffer, "r");
     }
-
-    return process;
+    return popen(command->buffer, "w");
 }
 
-Process process_startf(ProcessMode mode, Str* format, ...) {
+Process* process_startf(ProcessMode mode, Str* format, ...) {
     va_list args;
     va_start(args, format);
 
-    Process process;
-    process.command = string_from_args(format, args);
-    string_push_char(process.command, '\0');
+    CString* command = cstring_from_args(format, args);
+    Process* process;
 
     if (mode == PROCESS_READ) {
-        process.os_process = popen(process.command->buffer, "r");
+        process = popen(command->buffer, "r");
+
     } else {
-        process.os_process = popen(process.command->buffer, "w");
+        process = popen(command->buffer, "w");
     }
 
     va_end(args);
+    cstring_free(command);
 
     return process;
 }
@@ -62,7 +40,7 @@ String* process_read_all(Process* self) {
     String* input = string_with_capacity(PROCESS_DEFAULT_INPUT_LENGTH);
     c8 current;
 
-    while ((current = fgetc(self->os_process))) {
+    while ((current = fgetc(self))) {
         if (current == '\0' || current == -1) {
             break;
         }
@@ -80,18 +58,10 @@ String* process_read_all(Process* self) {
 
 void process_end(Process* self) {
     ASSERT_NONNULL(self);
-    ASSERT_NONNULL(self->os_process);
-    ASSERT_NONNULL(self->command);
-
-    string_free(self->command);
-    pclose(self->os_process);
+    pclose(self);
 }
 
-void command_run(String* command) {
-    if (command->buffer[command->length - 1] != '\0') {
-        string_push_char(command, '\0');
-    }
-
+void command_run(CStr* command) {
     system(command->buffer);
 }
 
@@ -99,11 +69,10 @@ void command_runf(Str* format, ...) {
     va_list args;
     va_start(args, format);
 
-    String* formatted = string_from_args(format, args);
-    string_push_char(formatted, '\0');
+    CString* formatted = cstring_from_args(format, args);
     system(formatted->buffer);
 
-    string_free(formatted);
+    cstring_free(formatted);
     va_end(args);
 }
 
@@ -129,6 +98,24 @@ void command_newline(usize count) {
     system(command);
 }
 
+void print(const Str* format, ...) {
+    va_list args;
+    va_start(args, format);
+    _fprint(stdout, format, args);
+    va_end(args);
+}
+
+void fprint(FILE* file, const Str* format, ...) {
+    va_list args;
+    va_start(args, format);
+    _fprint(file, format, args);
+    va_end(args);
+}
+
+void fprint_args(FILE* file, const Str* format, va_list args) {
+    _fprint(file, format, args);
+}
+
 /* Types:
  *
  * %S -> String
@@ -140,67 +127,55 @@ void command_newline(usize count) {
  * %b -> bool
  * %a -> address
  */
-void _ctk_fprintf(FILE* file, const char* format, va_list args) {
+void _fprint(FILE* file, const Str* format, va_list args) {
+    const c8* buffer = format->buffer;
     String* string;
     Str* str;
-    char* cstr;
-    char character;
-    int digit;
-    double decimal;
-    bool boolean;
-    void* address;
 
-    while (*format != '\0') {
-        char current = *format;
-        char next = *(format + 1);
+    for (usize i = 0; i < format->length; i++, buffer++) {
+        char current = *buffer;
 
-        if (current == '%' && next != '\0') {
-            switch (next) {
+        if (current != '%' || (i >= format->length - 1)) {
+            putc(current, file);
+        } else {
+            switch (*(buffer + 1)) {
                 case 'S':
                 case 'p':
                     string = va_arg(args, String*);
-                    fwrite(string->buffer, sizeof(u8), string->length, file);
+                    fwrite(string->buffer, sizeof(c8), string->length, file);
                     break;
                 case 's':
                     str = va_arg(args, Str*);
-                    fwrite(str->buffer, sizeof(u8), str->length, file);
+                    fwrite(str->buffer, sizeof(c8), str->length, file);
                     break;
                 case 'r':
-                    cstr = va_arg(args, char*);
-                    fprintf(file, "%s", cstr);
+                    fprintf(file, "%s", va_arg(args, char*));
                     break;
                 case 'd':
-                    digit = va_arg(args, i32);
-                    fprintf(file, "%d", digit);
+                    fprintf(file, "%d", va_arg(args, i32));
                     break;
                 case 'f':
-                    decimal = va_arg(args, i32);
-                    fprintf(file, "%f", decimal);
+                    fprintf(file, "%f", va_arg(args, f64));
                     break;
                 case 'b':
-                    boolean = va_arg(args, i32);
-                    if (boolean) {
+                    if (va_arg(args, i32)) {
                         fprintf(file, "%s", "true");
                     } else {
                         fprintf(file, "%s", "false");
                     }
                     break;
                 case 'a':
-                    address = va_arg(args, void*);
-                    fprintf(file, "%p", address);
+                    fprintf(file, "%p", va_arg(args, void*));
                     break;
                 case 'c':
-                    character = va_arg(args, u32);
-                    fprintf(file, "%c", character);
+                    fprintf(file, "%c", va_arg(args, u32));
                     break;
                 case '%':
                     putc('%', file);
                     break;
             }
-            format += 2;
-        } else {
-            putc(current, file);
-            format++;
+            i++;
+            buffer++;
         }
     }
 }
