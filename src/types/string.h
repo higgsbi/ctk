@@ -36,10 +36,7 @@ OPTION_TYPE(usize, Index, index, 0)
 
 // CSTRING
 
-#define cstr(literal)                                \
-    (CStr) {                                         \
-        .buffer = literal, .length = sizeof(literal) \
-    }
+#define cstr(literal) (CStr){.buffer = literal, .length = sizeof(literal) - 1}
 
 CStr cstr_from_chars(const c8* chars);
 CString* cstring_from_str(const Str* str);
