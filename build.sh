@@ -1,4 +1,4 @@
-TEST_DIR="test/"
+#!/bin/bash
 
 runnable_build() {
     ./build.sh --clean
@@ -7,24 +7,25 @@ runnable_build() {
     	exit 1
     fi
 
-    if [[ ! -f $1 ]]; then
-    	echo $1" does not exist"
+    if [[ ! -f "$1" ]]; then
+    	echo "$1" "does not exist"
     	exit 1
     fi
 
     if [[ ! ${1##*.} = c ]]; then
-    	echo $1" is not a source file"
+    	echo "$1" "is not a source file"
     	exit 1
     fi    
 
     ./build.sh --local
-    cd test/
-    rm -rf build/
-    mkdir build/
-    cd build
-    cmake .. -DTEST_NAME=$(basename $1)
-    make
-    cd ..
+    cd test/ || exit 1
+    (
+        rm -rf build/
+        mkdir build/
+        cd build || exit 1
+        cmake .. -DTEST_NAME="$(basename "$1")" "$2"
+        make
+    )
 }
 
 if [[ $1 == "--help" ]]; then
@@ -32,19 +33,19 @@ if [[ $1 == "--help" ]]; then
     
 Flags:
     
-    --clean:   removes build directories
-    --local:   generates a local library and header files
-    --system:  generates a system library and header files
-    --test:    runs a test in the test folder
-    --debug:   uses valgrind to test programs in the test folder
+  --clean:   removes build directories
+  --local:   generates a local library and header files
+  --system:  generates a system library and header files
+  --test:    runs a test in the test folder
+  --debug:   uses valgrind to test programs in the test folder
 
 Examples:
 
-    ./build.sh --clean                     (clean build directories)
-    ./build.sh --local                     (installs local library)
-    ./build.sh --system                    (installs system library)
-    ./build.sh --test [test/TEST_NAME.c]   (tests given test name without valgrind)    
-    ./build.sh --debug [test/TEST_NAME.c]  (tests given test name without valgrind)    
+  ./build.sh --clean                     (clean build directories)
+  ./build.sh --local                     (installs local library)
+  ./build.sh --system                    (installs system library)
+  ./build.sh --test [test/TEST_NAME.c]   (tests given test name without valgrind)    
+  ./build.sh --debug [test/TEST_NAME.c]  (tests given test name without valgrind)    
 
 Notes:
 
@@ -59,31 +60,27 @@ elif [[ $1 == "--clean" ]]; then
     rm -f test/vgcore.*
     rm -f vgcore.*
 elif [[ $1 == "--local" ]]; then
-    ./build.sh --clean
+    ./build.sh --clean "-DCMAKE_BUILD_TYPE=Release"
     mkdir build
     mkdir out
-    cd build
+    cd build || exit 1
     cmake .. -DLOCAL_BUILD=ON
     make install
     mv install/* ../out
-    cd ..
 elif [[ $1 == "--system" ]]; then
-    ./build.sh --clean
+    ./build.sh --clean "-DCMAKE_BUILD_TYPE=Release"
     mkdir build
-    cd build
+    cd build || exit 1
     cmake ..
     sudo make install
-    cd ..
 elif [[ $1 == "--test" ]]; then
-    runnable_build $2
+    runnable_build "$2" "-DCMAKE_BUILD_TYPE=Debug"
     ./build/test
     rm build/test
 elif [[ $1 == "--debug" ]]; then
-    runnable_build $2
+    runnable_build "$2" "-DCMAKE_BUILD_TYPE=Debug"
     valgrind -s --leak-check=full --track-origins=yes ./build/test
     rm build/test
-elif [[ $1 == '--example' ]]; then
-    test_build $2
 else 
     printf "Must provide an argument! For help, use build.sh --help\n"
 fi

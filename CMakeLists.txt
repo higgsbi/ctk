@@ -23,6 +23,17 @@ if (LOCAL_BUILD)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 endif()
 
+if(NOT CMAKE_BUILD_TYPE) 
+	set(CMAKE_BUILD_TYPE Release) 
+endif() 
+
+set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG -flto") 
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-Wl,--gc-sections -flto")
+
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g") 
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
+set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
+
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-function -Wno-pointer-sign)
 
