@@ -172,6 +172,10 @@ Str str_from_cstr(const CStr* cstr) {
     return (Str) {.buffer = cstr->buffer, .length = cstr->length};
 }
 
+Str str_from_chars(const c8* chars) {
+    return (Str) {.buffer = chars, .length = strlen(chars)};
+}
+
 Str* string_slice(const String* self) {
     return (Str*) self;
 }
@@ -206,8 +210,7 @@ String* string_from_args(const Str* format, va_list args) {
     self->buffer = allocate(sizeof(char), self->capacity);
     const c8* buffer = format->buffer;
 
-    CStr chars;
-    CStr cstr_converted;
+    Str str_converted;
     char digit_buffer[I32_DIGITS];
     char float_buffer[F32_DIGITS];
     char address_buffer[ADDRESS_DIGITS_64];
@@ -231,19 +234,18 @@ String* string_from_args(const Str* format, va_list args) {
                     string_push_str(self, va_arg(args, Str*));
                     break;
                 case 'r':
-                    chars = cstr_from_chars(va_arg(args, char*));
-                    Str str_convert = str_from_cstr(&chars);
-                    string_push_str(self, &str_convert);
+                    str_converted = str_from_chars(va_arg(args, char*));
+                    string_push_str(self, &str_converted);
                     break;
                 case 'd':
                     snprintf(digit_buffer, I32_DIGITS, "%d", va_arg(args, i32));
-                    cstr_converted = cstr_from_chars(digit_buffer);
-                    string_push_cstr(self, &cstr_converted);
+                    str_converted = str_from_chars(digit_buffer);
+                    string_push_str(self, &str_converted);
                     break;
                 case 'f':
                     snprintf(float_buffer, F32_DIGITS, "%f", va_arg(args, f64));
-                    cstr_converted = cstr_from_chars(float_buffer);
-                    string_push_cstr(self, &cstr_converted);
+                    str_converted = str_from_chars(float_buffer);
+                    string_push_str(self, &str_converted);
                     break;
                 case 'b':
                     if (va_arg(args, i32)) {
@@ -254,8 +256,8 @@ String* string_from_args(const Str* format, va_list args) {
                     break;
                 case 'a':
                     snprintf(address_buffer, ADDRESS_DIGITS_64, "%p", va_arg(args, void*));
-                    cstr_converted = cstr_from_chars(address_buffer);
-                    string_push_cstr(self, &cstr_converted);
+                    str_converted = str_from_chars(address_buffer);
+                    string_push_str(self, &str_converted);
                     break;
                 case 'c':
                     string_push_char(self, va_arg(args, u32));

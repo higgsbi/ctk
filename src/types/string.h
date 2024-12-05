@@ -56,6 +56,7 @@ void cstring_push_char(CString* self, c8 character);
 #define str(literal) (Str){.buffer = literal, .length = sizeof(literal) - 1}
 
 Str str_from_cstr(const CStr* cstr);
+Str str_from_chars(const c8* chars);
 Str* string_slice(const String* self);
 String* string_empty();
 String* string_from_str(const Str* str);
