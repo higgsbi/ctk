@@ -9,14 +9,14 @@
 
 void _fprint(FILE* file, const Str* format, va_list args);
 
-Process* process_start(ProcessMode mode, CStr* command) {
+Process* process_start(ProcessMode mode, const CStr* command) {
     if (mode == PROCESS_READ) {
         return popen(command->buffer, "r");
     }
     return popen(command->buffer, "w");
 }
 
-Process* process_startf(ProcessMode mode, Str* format, ...) {
+Process* process_startf(ProcessMode mode, const Str* format, ...) {
     va_list args;
     va_start(args, format);
 
@@ -61,11 +61,11 @@ void process_end(Process* self) {
     pclose(self);
 }
 
-void command_run(CStr* command) {
+void command_run(const CStr* command) {
     system(command->buffer);
 }
 
-void command_runf(Str* format, ...) {
+void command_runf(const Str* format, ...) {
     va_list args;
     va_start(args, format);
 

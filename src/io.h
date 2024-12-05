@@ -11,13 +11,13 @@ typedef FILE Process;
 typedef enum { PROCESS_READ, PROCESS_WRITE } ProcessMode;
 #define PROCESS_DEFAULT_INPUT_LENGTH 20
 
-Process* process_start(ProcessMode mode, CStr* command);
-Process* process_startf(ProcessMode mode, Str* format, ...);
+Process* process_start(ProcessMode mode, const CStr* command);
+Process* process_startf(ProcessMode mode, const Str* format, ...);
 String* process_read_all(Process* self);
 void process_end(Process* self);
 
-void command_run(CStr* command);
-void command_runf(Str* format, ...);
+void command_run(const CStr* command);
+void command_runf(const Str* format, ...);
 void command_clear();
 void command_newline(usize count);
 
