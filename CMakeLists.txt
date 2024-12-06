@@ -27,7 +27,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release) 
 endif() 
 
-set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG -flto") 
+set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG -flto -s") 
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-Wl,--gc-sections -flto")
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g") 
