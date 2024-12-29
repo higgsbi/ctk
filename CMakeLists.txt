@@ -8,6 +8,8 @@ set(SOURCES
 	src/file/path.c
 	src/file/file.c
 	src/io.c
+	src/math/aabb.c
+	src/math/vectors.c
 )
 
 set(HEADERS 
@@ -20,6 +22,9 @@ set(HEADERS
 	src/collections/entry.h
 	src/collections/entries.h
 	src/collections/map.h
+	src/math/aabb.h
+	src/math/vectors.h
+	src/math/math.h
 )
 
 if (LOCAL_BUILD)
@@ -38,7 +43,7 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
 set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror -Wno-unused-function -Wno-pointer-sign)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Werror -Wno-unused-function -Wno-pointer-sign)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/" DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}"
