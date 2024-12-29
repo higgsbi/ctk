@@ -2,8 +2,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>  // NOLINT
+#include "../math/aabb.h"
 #include "types.h"
 
+#define VEC_DIGITS 69
+#define AABB_DIGITS 139
 #define ADDRESS_DIGITS_64 18
 #define I32_DIGITS 12
 #define F32_DIGITS 32
@@ -66,16 +69,18 @@ CString* cstring_from_args(const Str* format, va_list args) {
     char digit_buffer[I32_DIGITS];
     char float_buffer[F32_DIGITS];
     char address_buffer[ADDRESS_DIGITS_64];
+    char vector_buffer[VEC_DIGITS];
+    char aabb_buffer[AABB_DIGITS];
+    Vec3* vec;
+    AABB* aabb;
 
-    for (usize i = 0; i < format->length - 1; i++, buffer++) {
+    for (usize i = 0; i < format->length; i++, buffer++) {
         char current = *buffer;
 
-        if (current == '\0') {
-            continue;
-        }
-
         if (current != '%' || (i >= format->length - 1)) {
-            cstring_push_char(self, current);
+            if (current != '\0') {
+                cstring_push_char(self, current);
+            }
         } else {
             switch (*(buffer + 1)) {
                 case 'S':
@@ -115,11 +120,25 @@ CString* cstring_from_args(const Str* format, va_list args) {
                 case 'c':
                     cstring_push_char(self, va_arg(args, u32));
                     break;
+                case 'v':
+                    vec = va_arg(args, Vec3*);
+                    snprintf(vector_buffer, VEC_DIGITS, "[%f %f %f]", vec->x, vec->y, vec->z);
+                    cstr_converted = cstr_from_chars(vector_buffer);
+                    cstring_push_cstr(self, &cstr_converted);
+                    break;
+                case 'B':
+                    aabb = va_arg(args, AABB*);
+                    snprintf(aabb_buffer, AABB_DIGITS, "([%f, %f, %f], [%f, %f, %f])", aabb->lower.x, aabb->lower.y,
+                             aabb->lower.z, aabb->higher.x, aabb->higher.y, aabb->higher.z);
+                    cstr_converted = cstr_from_chars(aabb_buffer);
+                    cstring_push_cstr(self, &cstr_converted);
+                    break;
                 case '%':
                     cstring_push_char(self, '%');
                     break;
             }
             buffer++;
+            i++;
         }
     }
 
@@ -275,16 +294,18 @@ String* string_from_args(const Str* format, va_list args) {
     char digit_buffer[I32_DIGITS];
     char float_buffer[F32_DIGITS];
     char address_buffer[ADDRESS_DIGITS_64];
+    char vector_buffer[VEC_DIGITS];
+    char aabb_buffer[AABB_DIGITS];
+    Vec3* vec;
+    AABB* aabb;
 
-    for (usize i = 0; i < format->length - 1; i++, buffer++) {
+    for (usize i = 0; i < format->length; i++, buffer++) {
         char current = *buffer;
 
-        if (current == '\0') {
-            continue;
-        }
-
         if (current != '%' || (i >= format->length - 1)) {
-            string_push_char(self, current);
+            if (current != '\0') {
+                string_push_char(self, current);
+            }
         } else {
             switch (*(buffer + 1)) {
                 case 'S':
@@ -323,10 +344,24 @@ String* string_from_args(const Str* format, va_list args) {
                 case 'c':
                     string_push_char(self, va_arg(args, u32));
                     break;
+                case 'v':
+                    vec = va_arg(args, Vec3*);
+                    snprintf(vector_buffer, VEC_DIGITS, "[%f %f %f]", vec->x, vec->y, vec->z);
+                    str_converted = str_from_chars(vector_buffer);
+                    string_push_str(self, &str_converted);
+                    break;
+                case 'B':
+                    aabb = va_arg(args, AABB*);
+                    snprintf(aabb_buffer, AABB_DIGITS, "([%f, %f, %f], [%f, %f, %f])", aabb->lower.x, aabb->lower.y,
+                             aabb->lower.z, aabb->higher.x, aabb->higher.y, aabb->higher.z);
+                    str_converted = str_from_chars(aabb_buffer);
+                    string_push_str(self, &str_converted);
+                    break;
                 case '%':
                     string_push_char(self, '%');
                     break;
             }
+            i++;
             buffer++;
         }
     }

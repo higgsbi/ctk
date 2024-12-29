@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "math/aabb.h"
 #include "types/string.h"
 #include "types/types.h"
 
@@ -131,6 +132,8 @@ void _fprint(FILE* file, const Str* format, va_list args) {
     const c8* buffer = format->buffer;
     String* string;
     Str* str;
+    Vec3* vec;
+    AABB* aabb;
 
     for (usize i = 0; i < format->length; i++, buffer++) {
         char current = *buffer;
@@ -169,6 +172,15 @@ void _fprint(FILE* file, const Str* format, va_list args) {
                     break;
                 case 'c':
                     fprintf(file, "%c", va_arg(args, u32));
+                    break;
+                case 'v':
+                    vec = va_arg(args, Vec3*);
+                    fprintf(file, "[%f, %f, %f]", vec->x, vec->y, vec->z);
+                    break;
+                case 'B':
+                    aabb = va_arg(args, AABB*);
+                    fprintf(file, "([%f, %f, %f], [%f, %f, %f])", aabb->lower.x, aabb->lower.y, aabb->lower.z,
+                            aabb->higher.x, aabb->higher.y, aabb->higher.z);
                     break;
                 case '%':
                     putc('%', file);

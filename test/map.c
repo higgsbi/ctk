@@ -38,6 +38,8 @@ int main() {
     entry_str_free(removed.value);
     assert(map_str_delete(map, &str("Hello")));
 
+    assert(!map_str_remove(map, &str("Whatever")).present);
+
     print(&str("\nForEach Macro ('Hi' + 'Hello' Removed):\n"));
     FOREACH_MAP(EntryStr entry, map, { print(&str("(%s -> %s)\n"), entry.key, entry.value); });
 

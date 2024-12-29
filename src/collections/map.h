@@ -70,8 +70,7 @@ usize map_index_from_key(const Str* key, usize entry_capacity) {
         }                                                                                                              \
                                                                                                                        \
         ListEntry##type_name* list = entries_##func_name##_get(self->entries, index);                                  \
-        for (NodeEntry##type_name* i = list_entry_##func_name##_begin(list); list_entry_##func_name##_has_next(i);     \
-             i = list_entry_##func_name##_next(i)) {                                                                   \
+        for (NodeEntry##type_name* i = list->head; i != null; i = i->next) {                                           \
             if (str_equals_str(i->value->key, key)) {                                                                  \
                 return option_entry_##func_name(i->value);                                                             \
             }                                                                                                          \
@@ -99,6 +98,9 @@ usize map_index_from_key(const Str* key, usize entry_capacity) {
         }                                                                                                              \
                                                                                                                        \
         ListEntry##type_name* list = entries_##func_name##_get(self->entries, index);                                  \
+        if (list == null) {                                                                                            \
+            return option_entry_##func_name##_empty();                                                                 \
+        }                                                                                                              \
         usize entry_index = 0;                                                                                         \
         for (NodeEntry##type_name* i = list->head; i != null; i = i->next, entry_index++) {                            \
             if (str_equals_str(i->value->key, key)) {                                                                  \
@@ -127,6 +129,7 @@ usize map_index_from_key(const Str* key, usize entry_capacity) {
                 }                                                                                                      \
             }                                                                                                          \
         }                                                                                                              \
+        return option_entry_##func_name##_empty();                                                                     \
     }                                                                                                                  \
     bool map_##func_name##_delete(Map##type_name* self, Str* key) {                                                    \
         OptionEntry##type_name removed = map_##func_name##_remove(self, key);                                          \

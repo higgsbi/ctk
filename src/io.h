@@ -33,6 +33,8 @@ void print(const Str* format, ...);
  * %f -> float
  * %b -> bool
  * %a -> address
+ * %v -> Vec3*
+ * %B -> AABB*
  */
 void fprint(FILE* file, const Str* format, ...);
 void fprint_args(FILE* file, const Str* format, va_list args);
