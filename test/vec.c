@@ -3,8 +3,8 @@
 #include "ctk/types/string.h"
 
 #define DEFAULT_SIZE 5
-TYPE_VECTOR(i32, I32, i32, int_clone, int_free, int_compare)  // NOLINT
-// TYPE_VECTOR(String, String, string, string_clone, string_free, string_compare)  // NOLINT
+TYPE_VECTOR(i32, I32, i32, int_clone, int_free, int_compare)                    // NOLINT
+TYPE_VECTOR(String, String, string, string_clone, string_free, string_compare)  // NOLINT
 
 i32 compare_reverse_int(const i32** first, const i32** second) {
     return int_compare(second, first);

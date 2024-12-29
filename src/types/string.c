@@ -14,6 +14,19 @@ CStr cstr_from_chars(const c8* chars) {
     return (CStr) {.buffer = chars, .length = strlen(chars)};
 }
 
+CStr* cstr_owned(const c8* chars) {
+    CStr* str = allocate(sizeof(Str), 1);
+    str->length = strlen(chars);
+    str->buffer = allocate(sizeof(c8), str->length);
+    strncpy((c8*) str->buffer, chars, str->length + 1);
+
+    return str;
+}
+
+CStr* cstr_to_owned(const CStr* self) {
+    return cstr_clone_deep(self);
+}
+
 CString* cstring_from_str(const Str* str) {
     CString* self = allocate(sizeof(CString), 1);
     self->length = str->length;
@@ -29,6 +42,8 @@ CString* cstring_from_string(String* self) {
 }
 
 CString* cstring_from_format(const Str* format, ...) {
+    ASSERT_NONNULL(format);
+
     va_list args;
     va_start(args, format);
     CString* cstring = cstring_from_args(format, args);
@@ -38,6 +53,8 @@ CString* cstring_from_format(const Str* format, ...) {
 }
 
 CString* cstring_from_args(const Str* format, va_list args) {
+    ASSERT_NONNULL(format);
+
     CString* self = allocate(sizeof(CString), 1);
     self->capacity = format->length + 1;
     self->length = 0;
@@ -110,6 +127,8 @@ CString* cstring_from_args(const Str* format, va_list args) {
 }
 
 CStr* cstring_slice(const CString* self) {
+    ASSERT_NONNULL(self);
+
     return (CStr*) self;
 }
 
@@ -132,7 +151,24 @@ void cstring_free(CString* self) {
     free(self);
 }
 
+CStr* cstr_clone_deep(const CStr* self) {
+    ASSERT_NONNULL(self);
+    CStr* clone = allocate(sizeof(CStr), 1);
+    clone->buffer = allocate(sizeof(c8), self->length);
+    clone->length = self->length;
+    strncpy((c8*) clone->buffer, self->buffer, self->length);
+
+    return clone;
+}
+
+void cstr_free_deep(CStr* self) {
+    ASSERT_NONNULL(self);
+    free((void*) self->buffer);
+    free(self);
+}
+
 void cstring_push_str(CString* self, const Str* str) {
+    ASSERT_NONNULL(self);
     usize length = str->length;
 
     if (self->capacity <= (self->length + length + 1)) {
@@ -150,11 +186,13 @@ void cstring_push_str(CString* self, const Str* str) {
 }
 
 void cstring_push_cstr(CString* self, const CStr* cstr) {
+    ASSERT_NONNULL(self);
     Str converted = str_from_cstr(cstr);
     cstring_push_str(self, &converted);
 }
 
 void cstring_push_char(CString* self, c8 character) {
+    ASSERT_NONNULL(self);
     if (self->capacity <= self->length + 1) {
         self->capacity = self->capacity * 2;
         self->buffer = reallocate(self->buffer, self->capacity);
@@ -168,15 +206,36 @@ void cstring_push_char(CString* self, c8 character) {
 
 // LIFECYCLE
 
+Str* str_owned(const c8* chars) {
+    ASSERT_NONNULL(chars);
+
+    Str* str = allocate(sizeof(Str), 1);
+    str->length = strlen(chars);
+    str->buffer = allocate(sizeof(c8), str->length);
+    strncpy((c8*) str->buffer, chars, str->length);
+
+    return str;
+}
+
+Str* str_to_owned(const Str* self) {
+    return str_clone_deep(self);
+}
+
 Str str_from_cstr(const CStr* cstr) {
+    ASSERT_NONNULL(cstr);
+
     return (Str) {.buffer = cstr->buffer, .length = cstr->length};
 }
 
 Str str_from_chars(const c8* chars) {
+    ASSERT_NONNULL(chars);
+
     return (Str) {.buffer = chars, .length = strlen(chars)};
 }
 
 Str* string_slice(const String* self) {
+    ASSERT_NONNULL(self);
+
     return (Str*) self;
 }
 
@@ -204,6 +263,8 @@ String* string_with_capacity(usize capacity) {
 }
 
 String* string_from_args(const Str* format, va_list args) {
+    ASSERT_NONNULL(format);
+
     String* self = allocate(sizeof(String), 1);
     self->capacity = format->length;
     self->length = 0;
@@ -274,6 +335,8 @@ String* string_from_args(const Str* format, va_list args) {
 }
 
 String* string_from_format(const Str* format, ...) {
+    ASSERT_NONNULL(format);
+
     va_list args;
     va_start(args, format);
     String* string = string_from_args(format, args);
@@ -293,6 +356,8 @@ String* string_from_str(const Str* str) {
 }
 
 String* string_clone(const String* self) {
+    ASSERT_NONNULL(self);
+
     String* string = allocate(sizeof(String), 1);
     string->capacity = self->length;
     string->length = self->length;
@@ -303,6 +368,8 @@ String* string_clone(const String* self) {
 }
 
 Str* str_clone(const Str* self) {
+    ASSERT_NONNULL(self);
+
     Str* clone = allocate(sizeof(Str), 1);
     clone->buffer = self->buffer;
     clone->length = self->length;
@@ -310,18 +377,39 @@ Str* str_clone(const Str* self) {
     return clone;
 }
 
+Str* str_clone_deep(const Str* self) {
+    ASSERT_NONNULL(self);
+
+    Str* clone = allocate(sizeof(Str), 1);
+    clone->buffer = allocate(sizeof(c8), self->length);
+    clone->length = self->length;
+    strncpy((char*) clone->buffer, self->buffer, self->length);
+
+    return clone;
+}
+
 void string_free(String* self) {
+    ASSERT_NONNULL(self);
+
     free(self->buffer);
     free(self);
 }
 
 void str_free(Str* self) {
+    ASSERT_NONNULL(self);
+    free(self);
+}
+
+void str_free_deep(Str* self) {
+    ASSERT_NONNULL(self);
+    free((void*) self->buffer);
     free(self);
 }
 
 // MUTATION
 
 void string_trim(String* self) {
+    ASSERT_NONNULL(self);
     usize start = 0;
     usize length = self->length;
 
@@ -346,11 +434,13 @@ void string_trim(String* self) {
 }
 
 void string_push_cstr(String* self, const CStr* cstr) {
+    ASSERT_NONNULL(self);
     Str converted = str_from_cstr(cstr);
     string_push_str(self, &converted);
 }
 
 void string_push_str(String* self, const Str* str) {
+    ASSERT_NONNULL(self);
     usize length = str->length;
 
     if (self->capacity <= (self->length + length)) {
@@ -367,6 +457,8 @@ void string_push_str(String* self, const Str* str) {
 }
 
 void string_push_char(String* self, c8 character) {
+    ASSERT_NONNULL(self);
+
     if (self->capacity <= self->length) {
         self->capacity = self->capacity * 2;
         self->buffer = reallocate(self->buffer, self->capacity);
@@ -376,6 +468,10 @@ void string_push_char(String* self, c8 character) {
 }
 
 void string_replace(String* self, Str* replaced, Str* replacer) {
+    ASSERT_NONNULL(self);
+    ASSERT_NONNULL(replaced);
+    ASSERT_NONNULL(replacer);
+
     if (replaced->length <= 0 || self->length < replaced->length) {
         return;
     }
@@ -418,6 +514,9 @@ void string_replace(String* self, Str* replaced, Str* replacer) {
 // QUERY
 
 bool str_contains_str(const Str* self, const Str* target) {
+    ASSERT_NONNULL(self);
+    ASSERT_NONNULL(target);
+
     if (self->length < target->length) {
         return false;
     }
@@ -442,9 +541,23 @@ bool str_contains_str(const Str* self, const Str* target) {
     return false;
 }
 
+usize str_hash(const Str* self) {
+    ASSERT_NONNULL(self);
+
+    size_t hash = 5381;  // NOLINT
+
+    for (size_t i = 0; i < self->length; i++) {
+        hash = (hash << 5) + self->buffer[i];  // NOLINT
+    }
+
+    return hash;
+}
+
 // if string does not contain delimeter, return empty vector
-VecStr* str_split_slice(const Str* self, char delimiter) {
-    VecStr* split = vec_str_new(2);
+VecStrSlice* str_split_slice(const Str* self, char delimiter) {
+    ASSERT_NONNULL(self);
+
+    VecStrSlice* split = vec_str_slice_new(2);
     i32 last_hit_index = -1;
 
     for (usize i = 0; i < self->length; i++) {
@@ -453,20 +566,22 @@ VecStr* str_split_slice(const Str* self, char delimiter) {
         if (delimiter == char_at) {
             if (i - last_hit_index > 1) {
                 Str subslice = str_subslice(self, last_hit_index + 1, i - last_hit_index - 1);
-                vec_str_push_back(split, str_clone(&subslice));
+                vec_str_slice_push_back(split, str_clone(&subslice));
             }
             last_hit_index = i;
         } else if (i >= self->length - 1 && last_hit_index >= 0) {
             Str subslice = str_subslice(self, last_hit_index + 1, i - last_hit_index);
-            vec_str_push_back(split, str_clone(&subslice));
+            vec_str_slice_push_back(split, str_clone(&subslice));
         }
     }
 
     return split;
 }
 
-VecString* str_split(const Str* self, char delimiter) {
-    VecString* split = vec_string_new(2);
+VecStringOwned* str_split(const Str* self, char delimiter) {
+    ASSERT_NONNULL(self);
+
+    VecStringOwned* split = vec_string_owned_new(2);
     i32 last_hit_index = -1;
 
     for (usize i = 0; i < self->length; i++) {
@@ -475,13 +590,13 @@ VecString* str_split(const Str* self, char delimiter) {
         if (delimiter == char_at) {
             if (i - last_hit_index > 1) {
                 Str subslice = str_subslice(self, last_hit_index + 1, i - last_hit_index - 1);
-                vec_string_push_back(split, string_from_str(&subslice));
+                vec_string_owned_push_back(split, string_from_str(&subslice));
             }
 
             last_hit_index = i;
         } else if (i >= self->length - 1 && last_hit_index >= 0) {
             Str subslice = str_subslice(self, last_hit_index + 1, i - last_hit_index);
-            vec_string_push_back(split, string_from_str(&subslice));
+            vec_string_owned_push_back(split, string_from_str(&subslice));
         }
     }
 
@@ -489,6 +604,8 @@ VecString* str_split(const Str* self, char delimiter) {
 }
 
 bool str_contains_char(const Str* self, char target) {
+    ASSERT_NONNULL(self);
+
     for (usize i = 0; i < self->length; i++) {
         if (self->buffer[i] == target) {
             return true;
@@ -501,6 +618,8 @@ bool str_contains_char(const Str* self, char target) {
 // INDEX
 
 OptionIndex string_index_first_n_char(String* self, c8 character, usize n) {
+    ASSERT_NONNULL(self);
+
     usize n_index = 0;
 
     for (usize i = 0; i < self->length; i++) {
@@ -517,6 +636,8 @@ OptionIndex string_index_first_n_char(String* self, c8 character, usize n) {
 }
 
 OptionIndex string_index_last_n_char(String* self, c8 character, usize n) {
+    ASSERT_NONNULL(self);
+
     usize n_index = 0;
 
     for (i32 i = self->length - 1; i >= 0; i--) {
@@ -533,6 +654,8 @@ OptionIndex string_index_last_n_char(String* self, c8 character, usize n) {
 }
 
 OptionIndex str_index_first_char(const Str* self, c8 character) {
+    ASSERT_NONNULL(self);
+
     for (usize i = 0; i < self->length; i++) {
         u8 char_at = self->buffer[i];
         if (character == char_at) {
@@ -544,6 +667,8 @@ OptionIndex str_index_first_char(const Str* self, c8 character) {
 }
 
 OptionIndex str_index_last_char(const Str* self, c8 character) {
+    ASSERT_NONNULL(self);
+
     for (i32 i = self->length - 1; i >= 0; i--) {
         u8 char_at = self->buffer[i];
         if (character == char_at) {
@@ -557,50 +682,63 @@ OptionIndex str_index_last_char(const Str* self, c8 character) {
 // COMPARISON
 
 bool string_equals_string(const String* self, const String* other) {
-    return self->length == other->length && memcmp(self->buffer, other->buffer, self->length) == 0;
+    return ((self == null) == (other == null)) && self->length == other->length &&
+           memcmp(self->buffer, other->buffer, self->length) == 0;
 }
 
 bool string_equals_str(const String* self, const Str* other) {
-    return self->length == other->length && memcmp(self->buffer, other->buffer, self->length) == 0;
+    return ((self == null) == (other == null)) && self->length == other->length &&
+           memcmp(self->buffer, other->buffer, self->length) == 0;
 }
 
 bool string_equals_chars(const String* self, const u8* other) {
     usize length_other = strlen((const char*) other);
-    return self->length == length_other && memcmp(self->buffer, other, length_other) == 0;
+    return ((self == null) == (other == null)) && self->length == length_other &&
+           memcmp(self->buffer, other, length_other) == 0;
 }
 
 bool str_equals_str(const Str* self, const Str* other) {
-    return self->length == other->length && memcmp(self->buffer, other->buffer, self->length) == 0;
+    return ((self == null) == (other == null)) && self->length == other->length &&
+           memcmp(self->buffer, other->buffer, self->length) == 0;
 }
 
 bool str_equals_chars(const Str* self, const u8* other) {
     usize length_other = strlen((const char*) other);
-    return self->length == length_other && memcmp(self->buffer, other, length_other) == 0;
+    return ((self == null) == (other == null)) && self->length == length_other &&
+           memcmp(self->buffer, other, length_other) == 0;
 }
 
 i32 string_compare(const String** self, const String** other) {
     usize length = (*self)->length < (*other)->length ? (*self)->length : (*other)->length;
-    return (*self)->length == (*other)->length && memcmp((*self)->buffer, (*other)->buffer, length);
+    return ((self == null) == (other == null)) && (*self)->length == (*other)->length &&
+           memcmp((*self)->buffer, (*other)->buffer, length);
 }
 
 i32 str_compare(const Str** self, const Str** other) {
     usize length = (*self)->length < (*other)->length ? (*self)->length : (*other)->length;
-    return (*self)->length == (*other)->length && memcmp((*self)->buffer, (*other)->buffer, length);
+    return ((self == null) == (other == null)) && (*self)->length == (*other)->length &&
+           memcmp((*self)->buffer, (*other)->buffer, length);
 }
 
 // PRINTING
 
 void str_debug(const Str* self) {
+    ASSERT_NONNULL(self);
+
     printf("{\n  Buffer: ");
     fwrite(self->buffer, sizeof(u8), self->length, stdout);
     printf("\n  Length: %zu\n}\n", self->length);
 }
 
 void str_println(const Str* self) {
+    ASSERT_NONNULL(self);
+
     fwrite(self->buffer, sizeof(u8), self->length, stdout);
     fwrite("\n", sizeof(u8), 1, stdout);
 }
 
 void str_print(const Str* self) {
+    ASSERT_NONNULL(self);
+
     fwrite(self->buffer, sizeof(u8), self->length, stdout);
 }

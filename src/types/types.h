@@ -34,7 +34,7 @@ typedef i32 (*Compare)(const void*, const void*);
 #define LAMBDA(return_type, function_body) ({ return_type __fn__ function_body __fn__; })
 
 static inline void* reallocate(void* self, usize size) {
-    return realloc(self, size);
+    return realloc(self, sizeof(void*) * size);
 }
 
 static inline void* allocate(usize size, usize count) {

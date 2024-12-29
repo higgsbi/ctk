@@ -76,12 +76,12 @@ void file_write(File* self, const Str* format, ...) {
     va_end(args);
 }
 
-VecString* file_read_lines(File* self) {
+VecStringOwned* file_read_lines(File* self) {
     String* line = string_empty();
-    VecString* vec = vec_string_new(DEFAULT_LINES_PER_FILE);
+    VecStringOwned* vec = vec_string_owned_new(DEFAULT_LINES_PER_FILE);
 
     while (file_read_line(self, line)) {
-        vec_string_push_back(vec, string_clone(line));
+        vec_string_owned_push_back(vec, string_clone(line));
     }
 
     string_free(line);

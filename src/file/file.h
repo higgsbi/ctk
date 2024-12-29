@@ -30,7 +30,7 @@ void file_write_str(File* self, Str* str);
 void file_write_line(File* self, Str* str);
 
 bool file_read_line(File* self, String* buffer);
-VecString* file_read_lines(File* self);
+VecStringOwned* file_read_lines(File* self);
 
 /**
  * Note: frees the path and closes file

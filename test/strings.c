@@ -48,12 +48,12 @@ int main() {
     Str split_string = str("One/Two/Three");
     print(&str("Split Whole: '%s'\n"), &split_string);
 
-    VecStr* split_slice = str_split_slice(&split_string, '/');
+    VecStrSlice* split_slice = str_split_slice(&split_string, '/');
     assert(split_slice->count == 3);
     FOREACH_VECTOR(Str str, split_slice, { print(&str("Split: %s\n"), &str); });
 
     Str split_string_b = str("/One//Two//Three/");
-    VecString* split = str_split(&split_string_b, '/');
+    VecStringOwned* split = str_split(&split_string_b, '/');
     assert(split->count == 3);
 
     // Replaced
@@ -65,8 +65,8 @@ int main() {
 
     // Free
     string_free(original);
-    vec_str_free(split_slice);
-    vec_string_free(split);
+    vec_str_slice_free(split_slice);
+    vec_string_owned_free(split);
     string_free(spaced_out);
     string_free(formatted);
     string_free(string);

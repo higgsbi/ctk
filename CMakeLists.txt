@@ -17,6 +17,9 @@ set(HEADERS
 	src/file/path.h
 	src/file/file.h
 	src/collections/vector.h
+	src/collections/entry.h
+	src/collections/entries.h
+	src/collections/map.h
 )
 
 if (LOCAL_BUILD)
