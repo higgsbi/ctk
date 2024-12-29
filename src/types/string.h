@@ -32,7 +32,7 @@ typedef struct {
     usize length;
 } CStr;
 
-OPTION_TYPE(usize, Index, index, 0)
+TYPE_OPTION(usize, Index, index, 0)
 
 // CSTRING
 

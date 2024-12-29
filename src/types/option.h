@@ -21,7 +21,7 @@
  * option_type_get_or_default(option) -> type
  *
  */
-#define OPTION_TYPE(type, type_name, func_name, default_value)                                                        \
+#define TYPE_OPTION(type, type_name, func_name, default_value)                                                        \
     typedef struct {                                                                                                  \
         type value;                                                                                                   \
         bool present;                                                                                                 \

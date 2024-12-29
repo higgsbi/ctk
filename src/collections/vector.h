@@ -13,7 +13,7 @@
     typedef type* (*_clone_##func_name)(type*);                                                                 \
     typedef void(_destroy_##func_name)(type*);                                                                  \
     typedef i32(_compare_##func_name)(const type**, const type**);                                              \
-    OPTION_TYPE(type*, type_name, func_name, null)                                                              \
+    TYPE_OPTION(type*, type_name, func_name, null)                                                              \
                                                                                                                 \
     static inline Vec##type_name* vec_##func_name##_new(usize initial_capacity) {                               \
         Vec##type_name* self = (Vec##type_name*) allocate(sizeof(Vec##type_name), initial_capacity);            \

@@ -13,7 +13,7 @@
         Node##type_name* head;                                                                            \
     } List##type_name;                                                                                    \
                                                                                                           \
-    OPTION_TYPE(Node##type_name*, Node##type_name, node_##func_name, null);                               \
+    TYPE_OPTION(Node##type_name*, Node##type_name, node_##func_name, null);                               \
                                                                                                           \
     typedef type* (*_clone_##func_name)(type*);                                                           \
     typedef void(_destroy_##func_name)(type*);                                                            \

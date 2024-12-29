@@ -16,7 +16,7 @@ usize map_index_from_key(const Str* key, usize entry_capacity) {
 
 #define TYPE_MAP(type, type_name, func_name, destroy, clone)                                                           \
     TYPE_ENTRIES(type, type_name, func_name, destroy, clone)                                                           \
-    OPTION_TYPE(type*, type_name, func_name, null)                                                                     \
+    TYPE_OPTION(type*, type_name, func_name, null)                                                                     \
                                                                                                                        \
     typedef struct {                                                                                                   \
         Entries##type_name* entries;                                                                                   \

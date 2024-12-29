@@ -9,5 +9,4 @@ QualifierAlignment: Left
 AllowShortFunctionsOnASingleLine: None
 SpaceAfterCStyleCast: true
 SpacesInContainerLiterals: true
-
 ---
