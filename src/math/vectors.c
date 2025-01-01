@@ -35,6 +35,10 @@ Vec3 vec3_normalize(const Vec3* self) {
     return vec3(self->x / length, self->y / length, self->z / length);
 }
 
+Vec3 vec3_negated(const Vec3* self) {
+    return vec3(-self->x, -self->y, -self->z);
+}
+
 // QUERY
 bool vec3_equals(const Vec3* self, const Vec3* other) {
     return self->x == other->x && self->y == other->y && self->z == other->z;
