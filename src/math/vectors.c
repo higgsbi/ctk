@@ -26,6 +26,10 @@ Vec3 vec3_cross(const Vec3* self, const Vec3* other) {
     return vec3((self->y * other->z) - (self->z * other->y), (self->z * other->x) - (self->x * other->z), (self->x * other->y) - (self->y * other->x));
 }
 
+f32 vec3_dot(const Vec3* self, const Vec3* other) {
+    return (self->x * other->x) + (self->y * other->y) + (self->z * other->z);
+}
+
 f32 vec3_length(const Vec3* self) {
     return sqrt((self->x * self->x) + (self->y * self->y) + (self->z * self->z));
 }
