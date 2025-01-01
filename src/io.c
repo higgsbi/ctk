@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "math.h"
 #include "math/aabb.h"
+#include "math/matrix.h"
 #include "types/string.h"
 #include "types/types.h"
 
@@ -117,16 +119,65 @@ void fprint_args(FILE* file, const Str* format, va_list args) {
     _fprint(file, format, args);
 }
 
+#define F32_MIN_BEFORE_EXPONENT 1.0e-10
+#define F32_MAX_BEFORE_EXPONENT 1.0e10
+
+typedef enum {
+    ALIGN_RIGHT,
+    ALIGN_LEFT,
+    ALIGN_NONE
+} Alignment;
+
+void _fprint_float(FILE* file, f32 number, Alignment alignment) {
+    if (fabs(number) < F32_MIN_BEFORE_EXPONENT || fabs(number) > F32_MAX_BEFORE_EXPONENT) {
+        switch (alignment) {
+            case ALIGN_RIGHT:
+                fprintf(file, "%13.3e", number);
+                break;
+            case ALIGN_LEFT:
+                fprintf(file, "%-13.3e", number);
+                break;
+            case ALIGN_NONE:
+                fprintf(file, "%.3e", number);
+                break;
+        }
+    } else {
+        switch (alignment) {
+            case ALIGN_RIGHT:
+                fprintf(file, "%13.3f", number);
+                break;
+            case ALIGN_LEFT:
+                fprintf(file, "%-13.3f", number);
+                break;
+            case ALIGN_NONE:
+                fprintf(file, "%.3f", number);
+                break;
+        }
+    }
+}
+
+void _fprint_vec(FILE* file, f32* floats, usize length) {
+    fprintf(file, "[");
+    _fprint_float(file, floats[0], ALIGN_LEFT);
+    for (usize i = 1; i < length; i++) {
+        _fprint_float(file, floats[i], ALIGN_RIGHT);
+    }
+    fprintf(file, "]");
+}
+
 /* Types:
  *
- * %S -> String
- * %s -> str
- * %r -> raw cstring
+ * %S -> String*
+ * %s -> str*
+ * %r -> c8*
  * %c -> char
  * %d -> digit
  * %f -> float
  * %b -> bool
- * %a -> address
+ * %a -> void* (address)
+ * %v -> Vec3*
+ * %B -> AABB*
+ * %m -> Mat4*
  */
 void _fprint(FILE* file, const Str* format, va_list args) {
     const c8* buffer = format->buffer;
@@ -134,6 +185,7 @@ void _fprint(FILE* file, const Str* format, va_list args) {
     Str* str;
     Vec3* vec;
     AABB* aabb;
+    Mat4* mat;
 
     for (usize i = 0; i < format->length; i++, buffer++) {
         char current = *buffer;
@@ -175,12 +227,29 @@ void _fprint(FILE* file, const Str* format, va_list args) {
                     break;
                 case 'v':
                     vec = va_arg(args, Vec3*);
-                    fprintf(file, "[%f, %f, %f]", vec->x, vec->y, vec->z);
+                    _fprint_vec(file, (f32[3]) {vec->x, vec->y, vec->z}, 3);
                     break;
                 case 'B':
                     aabb = va_arg(args, AABB*);
-                    fprintf(file, "([%f, %f, %f], [%f, %f, %f])", aabb->lower.x, aabb->lower.y, aabb->lower.z,
-                            aabb->higher.x, aabb->higher.y, aabb->higher.z);
+                    fprintf(file, "(\n\t");
+                    _fprint_vec(file, (f32[3]) {aabb->lower.x, aabb->lower.y, aabb->lower.z}, 3);
+                    fprintf(file, "\n\t");
+                    _fprint_vec(file, (f32[3]) {aabb->higher.x, aabb->higher.y, aabb->higher.z}, 3);
+                    fprintf(file, "\n");
+                    fprintf(file, ")");
+                    break;
+                case 'm':
+                    mat = va_arg(args, Mat4*);
+                    fprintf(file, "(\n\t");
+                    _fprint_vec(file, (f32[4]) {mat->m0, mat->m1, mat->m2, mat->m3}, 4);
+                    fprintf(file, "\n\t");
+                    _fprint_vec(file, (f32[4]) {mat->m4, mat->m5, mat->m6, mat->m7}, 4);
+                    fprintf(file, "\n\t");
+                    _fprint_vec(file, (f32[4]) {mat->m8, mat->m9, mat->m10, mat->m11}, 4);
+                    fprintf(file, "\n\t");
+                    _fprint_vec(file, (f32[4]) {mat->m12, mat->m13, mat->m14, mat->m15}, 4);
+                    fprintf(file, "\n");
+                    fprintf(file, ")");
                     break;
                 case '%':
                     putc('%', file);

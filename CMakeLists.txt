@@ -10,6 +10,7 @@ set(SOURCES
 	src/io.c
 	src/math/aabb.c
 	src/math/vectors.c
+	src/math/matrix.c
 )
 
 set(HEADERS 
@@ -25,6 +26,7 @@ set(HEADERS
 	src/math/aabb.h
 	src/math/vectors.h
 	src/math/math.h
+	src/math/matrix.h
 )
 
 if (LOCAL_BUILD)

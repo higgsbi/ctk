@@ -1,15 +1,35 @@
 #include "string.h"
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>  // NOLINT
 #include "../math/aabb.h"
+#include "../math/matrix.h"
 #include "types.h"
 
-#define VEC_DIGITS 69
-#define AABB_DIGITS 139
+#define F32_DIGITS 17
+#define VEC3_DIGITS ((F32_DIGITS * 3) + 2)
+#define VEC4_DIGITS ((F32_DIGITS * 4) + 2)
+#define AABB_DIGITS ((VEC4_DIGITS * 2) + (2 * 2) + 2)
+#define MAT4_DIGITS ((VEC4_DIGITS * 4) + (2 * 4) + 2)
 #define ADDRESS_DIGITS_64 18
 #define I32_DIGITS 12
-#define F32_DIGITS 32
+
+#define BUFFER_MAX_DIGITS MAT4_DIGITS
+
+#define F32_MIN_BEFORE_EXPONENT 1.0e-10
+#define F32_MAX_BEFORE_EXPONENT 1.0e10
+
+typedef enum {
+    ALIGN_RIGHT,
+    ALIGN_LEFT,
+    ALIGN_NONE
+} Alignment;
+
+c8* _format_f32(c8* buffer, f32 number, Alignment alignment);
+c8* _format_row_f32_vec(c8* buffer, f32* floats, usize length);
+void _format_aabb(char* buffer, AABB* aabb);
+void _format_matrix(char* buffer, Mat4* mat);
 
 // CSTR
 
@@ -66,13 +86,10 @@ CString* cstring_from_args(const Str* format, va_list args) {
 
     CStr chars;
     CStr cstr_converted;
-    char digit_buffer[I32_DIGITS];
-    char float_buffer[F32_DIGITS];
-    char address_buffer[ADDRESS_DIGITS_64];
-    char vector_buffer[VEC_DIGITS];
-    char aabb_buffer[AABB_DIGITS];
+    char input_buffer[BUFFER_MAX_DIGITS];
     Vec3* vec;
     AABB* aabb;
+    Mat4* mat4;
 
     for (usize i = 0; i < format->length; i++, buffer++) {
         char current = *buffer;
@@ -96,13 +113,13 @@ CString* cstring_from_args(const Str* format, va_list args) {
                     cstring_push_str(self, &str_convert);
                     break;
                 case 'd':
-                    snprintf(digit_buffer, I32_DIGITS, "%d", va_arg(args, i32));
-                    cstr_converted = cstr_from_chars(digit_buffer);
+                    snprintf(input_buffer, I32_DIGITS, "%d", va_arg(args, i32));
+                    cstr_converted = cstr_from_chars(input_buffer);
                     cstring_push_cstr(self, &cstr_converted);
                     break;
                 case 'f':
-                    snprintf(float_buffer, F32_DIGITS, "%f", va_arg(args, f64));
-                    cstr_converted = cstr_from_chars(float_buffer);
+                    snprintf(input_buffer, F32_DIGITS, "%f", va_arg(args, f64));
+                    cstr_converted = cstr_from_chars(input_buffer);
                     cstring_push_cstr(self, &cstr_converted);
                     break;
                 case 'b':
@@ -113,8 +130,8 @@ CString* cstring_from_args(const Str* format, va_list args) {
                     }
                     break;
                 case 'a':
-                    snprintf(address_buffer, ADDRESS_DIGITS_64, "%p", va_arg(args, void*));
-                    cstr_converted = cstr_from_chars(address_buffer);
+                    snprintf(input_buffer, ADDRESS_DIGITS_64, "%p", va_arg(args, void*));
+                    cstr_converted = cstr_from_chars(input_buffer);
                     cstring_push_cstr(self, &cstr_converted);
                     break;
                 case 'c':
@@ -122,15 +139,20 @@ CString* cstring_from_args(const Str* format, va_list args) {
                     break;
                 case 'v':
                     vec = va_arg(args, Vec3*);
-                    snprintf(vector_buffer, VEC_DIGITS, "[%f %f %f]", vec->x, vec->y, vec->z);
-                    cstr_converted = cstr_from_chars(vector_buffer);
+                    _format_row_f32_vec(input_buffer, (f32[3]) {vec->x, vec->y, vec->z}, 3);
+                    cstr_converted = cstr_from_chars(input_buffer);
                     cstring_push_cstr(self, &cstr_converted);
                     break;
                 case 'B':
                     aabb = va_arg(args, AABB*);
-                    snprintf(aabb_buffer, AABB_DIGITS, "([%f, %f, %f], [%f, %f, %f])", aabb->lower.x, aabb->lower.y,
-                             aabb->lower.z, aabb->higher.x, aabb->higher.y, aabb->higher.z);
-                    cstr_converted = cstr_from_chars(aabb_buffer);
+                    _format_aabb(input_buffer, aabb);
+                    cstr_converted = cstr_from_chars(input_buffer);
+                    cstring_push_cstr(self, &cstr_converted);
+                    break;
+                case 'm':
+                    mat4 = va_arg(args, Mat4*);
+                    _format_matrix(input_buffer, mat4);
+                    cstr_converted = cstr_from_chars(input_buffer);
                     cstring_push_cstr(self, &cstr_converted);
                     break;
                 case '%':
@@ -291,13 +313,10 @@ String* string_from_args(const Str* format, va_list args) {
     const c8* buffer = format->buffer;
 
     Str str_converted;
-    char digit_buffer[I32_DIGITS];
-    char float_buffer[F32_DIGITS];
-    char address_buffer[ADDRESS_DIGITS_64];
-    char vector_buffer[VEC_DIGITS];
-    char aabb_buffer[AABB_DIGITS];
+    char input_buffer[BUFFER_MAX_DIGITS];
     Vec3* vec;
     AABB* aabb;
+    Mat4* mat4;
 
     for (usize i = 0; i < format->length; i++, buffer++) {
         char current = *buffer;
@@ -320,13 +339,13 @@ String* string_from_args(const Str* format, va_list args) {
                     string_push_str(self, &str_converted);
                     break;
                 case 'd':
-                    snprintf(digit_buffer, I32_DIGITS, "%d", va_arg(args, i32));
-                    str_converted = str_from_chars(digit_buffer);
+                    snprintf(input_buffer, I32_DIGITS, "%d", va_arg(args, i32));
+                    str_converted = str_from_chars(input_buffer);
                     string_push_str(self, &str_converted);
                     break;
                 case 'f':
-                    snprintf(float_buffer, F32_DIGITS, "%f", va_arg(args, f64));
-                    str_converted = str_from_chars(float_buffer);
+                    _format_f32(input_buffer, va_arg(args, f64), ALIGN_NONE);
+                    str_converted = str_from_chars(input_buffer);
                     string_push_str(self, &str_converted);
                     break;
                 case 'b':
@@ -337,8 +356,8 @@ String* string_from_args(const Str* format, va_list args) {
                     }
                     break;
                 case 'a':
-                    snprintf(address_buffer, ADDRESS_DIGITS_64, "%p", va_arg(args, void*));
-                    str_converted = str_from_chars(address_buffer);
+                    snprintf(input_buffer, ADDRESS_DIGITS_64, "%p", va_arg(args, void*));
+                    str_converted = str_from_chars(input_buffer);
                     string_push_str(self, &str_converted);
                     break;
                 case 'c':
@@ -346,15 +365,20 @@ String* string_from_args(const Str* format, va_list args) {
                     break;
                 case 'v':
                     vec = va_arg(args, Vec3*);
-                    snprintf(vector_buffer, VEC_DIGITS, "[%f %f %f]", vec->x, vec->y, vec->z);
-                    str_converted = str_from_chars(vector_buffer);
+                    _format_row_f32_vec(input_buffer, (f32[3]) {vec->x, vec->y, vec->z}, 3);
+                    str_converted = str_from_chars(input_buffer);
                     string_push_str(self, &str_converted);
                     break;
                 case 'B':
                     aabb = va_arg(args, AABB*);
-                    snprintf(aabb_buffer, AABB_DIGITS, "([%f, %f, %f], [%f, %f, %f])", aabb->lower.x, aabb->lower.y,
-                             aabb->lower.z, aabb->higher.x, aabb->higher.y, aabb->higher.z);
-                    str_converted = str_from_chars(aabb_buffer);
+                    _format_aabb(input_buffer, aabb);
+                    str_converted = str_from_chars(input_buffer);
+                    string_push_str(self, &str_converted);
+                    break;
+                case 'm':
+                    mat4 = va_arg(args, Mat4*);
+                    _format_matrix(input_buffer, mat4);
+                    str_converted = str_from_chars(input_buffer);
                     string_push_str(self, &str_converted);
                     break;
                 case '%':
@@ -776,4 +800,71 @@ void str_print(const Str* self) {
     ASSERT_NONNULL(self);
 
     fwrite(self->buffer, sizeof(u8), self->length, stdout);
+}
+
+c8* _format_f32(char* buffer, f32 number, Alignment alignment) {
+    if (fabs(number) < F32_MIN_BEFORE_EXPONENT || fabs(number) > F32_MAX_BEFORE_EXPONENT) {
+        switch (alignment) {
+            case ALIGN_RIGHT:
+                return buffer + snprintf(buffer, F32_DIGITS, "%13.3e", number);
+                break;
+            case ALIGN_LEFT:
+                return buffer + snprintf(buffer, F32_DIGITS, "%-13.3e", number);
+                break;
+            default:
+                return buffer + snprintf(buffer, F32_DIGITS, "%.3e", number);
+                break;
+        }
+    } else {
+        switch (alignment) {
+            case ALIGN_RIGHT:
+                return buffer + snprintf(buffer, F32_DIGITS, "%13.3f", number);
+                break;
+            case ALIGN_LEFT:
+                return buffer + snprintf(buffer, F32_DIGITS, "%-13.3f", number);
+                break;
+            default:
+                return buffer + snprintf(buffer, F32_DIGITS, "%.3f", number);
+                break;
+        }
+    }
+}
+
+c8* _format_row_f32_vec(char* buffer, f32* floats, usize length) {
+    *buffer = '[';
+    buffer++;
+    buffer = _format_f32(buffer, floats[0], ALIGN_LEFT);
+    for (usize i = 1; i < length; i++) {
+        buffer = _format_f32(buffer, floats[i], ALIGN_RIGHT);
+    }
+    *buffer = ']';
+    buffer++;
+    *buffer = '\0';
+    return buffer;
+}
+
+void _format_aabb(char* buffer, AABB* aabb) {
+    strncpy(buffer, "(\n\t", 3);
+    buffer += 3;
+    buffer = _format_row_f32_vec(buffer, (f32[3]) {aabb->lower.x, aabb->lower.y, aabb->lower.z}, 3);
+    strncpy(buffer, "\n\t", 3);
+    buffer += 2;
+    buffer = _format_row_f32_vec(buffer, (f32[3]) {aabb->higher.x, aabb->higher.y, aabb->higher.z}, 3);
+    strncpy(buffer, "\n)", 3);
+}
+
+void _format_matrix(char* buffer, Mat4* mat) {
+    strncpy(buffer, "(\n\t", 3);
+    buffer += 3;
+    buffer = _format_row_f32_vec(buffer, (f32[4]) {mat->m0, mat->m1, mat->m2, mat->m3}, 4);
+    strncpy(buffer, "\n\t", 3);
+    buffer += 2;
+    buffer = _format_row_f32_vec(buffer, (f32[4]) {mat->m4, mat->m5, mat->m6, mat->m7}, 4);
+    strncpy(buffer, "\n\t", 3);
+    buffer += 2;
+    buffer = _format_row_f32_vec(buffer, (f32[4]) {mat->m8, mat->m9, mat->m10, mat->m11}, 4);
+    strncpy(buffer, "\n\t", 3);
+    buffer += 2;
+    buffer = _format_row_f32_vec(buffer, (f32[4]) {mat->m12, mat->m13, mat->m14, mat->m15}, 4);
+    strncpy(buffer, "\n)", 3);
 }

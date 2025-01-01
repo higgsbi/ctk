@@ -2,8 +2,7 @@
 #include "ctk/io.h"
 #include "ctk/types/string.h"
 
-int main()
-{
+int main() {
     AABB box = aabb(&vec3(-16, -16, -16), &vec3(16, 16, 16));
 
     assert(aabb_contains(&box, &vec3(0, 0, 0)));

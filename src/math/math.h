@@ -15,4 +15,11 @@
         _a < _b ? _a : _b;      \
     })
 
+#ifndef PI
+#define PI 3.14159
+#endif
+
+#define RADIANS_TO_DEGREES(radians) (radians * (180.0 / PI))
+#define DEGREES_TO_RADIANS(degrees) (degrees * (PI / 180.0))
+
 #endif
