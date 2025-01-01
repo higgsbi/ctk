@@ -36,7 +36,7 @@ Vec3 vec3_add_vec3(const Vec3* self, const Vec3* other);
 Vec3 vec3_sub_vec3(const Vec3* self, const Vec3* other);
 Vec3 vec3_mul(const Vec3* self, f32 scale);
 Vec3 vec3_cross(const Vec3* self, const Vec3* other);
-Vec3 vec_normalize(const Vec3* self);
+Vec3 vec3_normalize(const Vec3* self);
 
 // QUERY
 bool vec3_equals(const Vec3* self, const Vec3* other);

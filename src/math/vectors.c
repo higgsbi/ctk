@@ -23,15 +23,14 @@ Vec3 vec3_mul(const Vec3* self, f32 scale) {
 }
 
 Vec3 vec3_cross(const Vec3* self, const Vec3* other) {
-    return vec3((self->y * other->z) - (self->z * other->y), (self->z * other->x) - (self->x * other->z),
-                (self->x * other->y) - (self->y * other->x));
+    return vec3((self->y * other->z) - (self->z * other->y), (self->z * other->x) - (self->x * other->z), (self->x * other->y) - (self->y * other->x));
 }
 
 f32 vec3_length(const Vec3* self) {
     return sqrt((self->x * self->x) + (self->y * self->y) + (self->z * self->z));
 }
 
-Vec3 vec_normalize(const Vec3* self) {
+Vec3 vec3_normalize(const Vec3* self) {
     f32 length = vec3_length(self);
     return vec3(self->x / length, self->y / length, self->z / length);
 }

@@ -19,6 +19,14 @@
 #define PI 3.14159
 #endif
 
+#ifndef PI_2
+#define PI_2 9.86960
+#endif
+
+#ifndef PI_SQRT
+#define PI_SQRT 1.77245
+#endif
+
 #define RADIANS_TO_DEGREES(radians) (radians * (180.0 / PI))
 #define DEGREES_TO_RADIANS(degrees) (degrees * (PI / 180.0))
 
