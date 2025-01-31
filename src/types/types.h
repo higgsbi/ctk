@@ -32,6 +32,8 @@ typedef i32 (*Compare)(const void*, const void*);
 #define null NULL
 #define CAST(object, type) ((type) object)
 #define LAMBDA(return_type, function_body) ({ return_type __fn__ function_body __fn__; })
+#define TEXT_TO_STRING(x) #x
+#define STRINGIFY(x) TEXT_TO_STRING(x)
 
 static inline void* reallocate(void* self, usize size) {
     return realloc(self, sizeof(void*) * size);

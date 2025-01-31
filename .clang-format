@@ -6,7 +6,7 @@ IncludeBlocks: Merge
 DerivePointerAlignment: false
 PointerAlignment: Left
 QualifierAlignment: Left
-AlignAfterOpenBracket: BlockIndent
+#AlignAfterOpenBracket: BlockIndent
 AllowShortFunctionsOnASingleLine: false
 SpaceAfterCStyleCast: true
 SpacesInContainerLiterals: true
