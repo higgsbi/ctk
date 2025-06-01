@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.0)
+﻿cmake_minimum_required(VERSION 3.5)
 project(test)
 
 option(TEST_NAME "Test file to run" "strings.c")

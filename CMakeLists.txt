@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.0)
+﻿cmake_minimum_required(VERSION 3.5)
 project(ctk)
 
 option(LOCAL_BUILD "Build library locally instead of to system" OFF)
